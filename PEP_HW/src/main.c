@@ -4,7 +4,7 @@
 #include <Init.h>
 
 
-void main(void)
+int main(void)
 {
 	Init();	//initializes the system
 
