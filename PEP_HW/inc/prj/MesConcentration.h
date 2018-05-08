@@ -4,12 +4,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-extern void MesConcentraitonInit(void);
+extern void MesConcentrationInit(void);
 
 typedef struct{
 	float concentration;
 	uint32_t time;
 }Concentration;
-extern bool MesConcentrationGet_concentration(Temperature*);
+extern bool MesConcentrationGet_concentration(Concentration*);
 
 #endif
