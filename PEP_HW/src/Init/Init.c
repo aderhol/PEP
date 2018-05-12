@@ -12,6 +12,8 @@
 
 static void defaultInit(void);
 
+bool global_IsInit = false;
+
 void Init(void)
 {
 	//initialization of the system
@@ -22,6 +24,8 @@ void Init(void)
 	CommandFromUARTInit();
 	MessengerUARTInit();
 	AlarmLEDInit();
+
+	global_IsInit = true;
 }
 
 //default initialization routine
