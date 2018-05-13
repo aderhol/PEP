@@ -3,7 +3,7 @@
 
 #include <timers.h>
 
-static void ledHandler(void);
+static void ledHandler(void* pvParam);
 static void statusGet(TimerHandle_t xTimer);
 
 #endif

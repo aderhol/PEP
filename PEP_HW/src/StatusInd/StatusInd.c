@@ -26,7 +26,7 @@ void StatusIndInit(void)
 	xTimerStart(xTimerCreate("StatusInd_statusGet_timer", configTICK_RATE_HZ / 10, pdTRUE, NULL, statusGet), 0);
 }
 
-static void ledHandler(void)
+static void ledHandler(void* pvParam)
 {
 	Status st;
 	while(true)
@@ -78,7 +78,7 @@ static void statusGet(TimerHandle_t xTimer)
 
 
 
-bool  __attribute__((weak)) CommandFromUARTGet_status(Status* status)
+bool __attribute__((weak)) CommandFromUARTGet_status(Status* status)
 {
 	static int i = 0, st = 0;
 	i = (i + 1) % 100;

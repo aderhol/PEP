@@ -13,6 +13,6 @@ typedef enum {
 
 void CommandFromUARTInit(void);
 bool CommandFromUARTGet_status(Status* status);
-bool CommandFromUARTGet_reply(char** reply, int_fast16_t maxLength); //sets reply to NULL, if maxLength is too small
+bool CommandFromUARTGet_reply(char* reply, int_fast16_t maxLength);	//sets the reply to "\0", if maxLength is too small
 
 #endif

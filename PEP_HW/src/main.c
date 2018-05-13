@@ -3,6 +3,8 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
+#include <common.h>
+
 #include <Init.h>
 
 int main(void)
