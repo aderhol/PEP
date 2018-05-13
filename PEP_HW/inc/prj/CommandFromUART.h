@@ -7,11 +7,12 @@
 typedef enum {
 	INIT,
 	UNCONNECTED,
-	CONNECTED
+	CONNECTED,
+	UNKNOWN
 }Status;
 
-extern void CommandFromUARTInit(void);
-extern bool CommandFromUARTGet_status(Status* status);
-extern bool CommandFromUARTGet_reply(char** reply, int_fast16_t maxLength); //sets reply to NULL, if maxLength is too small
+void CommandFromUARTInit(void);
+bool CommandFromUARTGet_status(Status* status);
+bool CommandFromUARTGet_reply(char** reply, int_fast16_t maxLength); //sets reply to NULL, if maxLength is too small
 
 #endif

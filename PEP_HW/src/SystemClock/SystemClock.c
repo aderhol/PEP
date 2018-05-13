@@ -10,7 +10,7 @@
 
 #include <common.h>
 
-volatile uint64_t time_ms = 0;										//the system time, incremented in every millisecond
+static volatile uint64_t time_ms = 0;								//the system time, incremented in every millisecond
 
 static bool isInit = false;
 
@@ -43,7 +43,7 @@ void RTC_IRQHandler(void)
 	RTC_IntClear(0b111);											//clear all RTC interrupts
 	CORE_CRITICAL_SECTION(
 			time_ms++;												//increment system time
-	)
+	);
 }
 
 bool SystemClockGet_ms(uint32_t* time)
