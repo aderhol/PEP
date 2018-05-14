@@ -28,8 +28,8 @@ void MessengerUARTInit(void)
 	RETARGET_SerialInit();
 	RETARGET_SerialCrLf(1);
 	messengerSem = xSemaphoreCreateBinary();
-	xTaskCreate(messenger, "MessengerUART_messenger_task", configMINIMAL_STACK_SIZE, NULL, BASE_PRIORITY, NULL);
-	//xTimerStart(xTimerCreate("MessengerUART_messenger_timer", configTICK_RATE_HZ / 100, pdTRUE, NULL, messenger_timer), 0);
+	xTaskCreate(messenger, "MessengerUART_messenger_task", configMINIMAL_STACK_SIZE * 2, NULL, BASE_PRIORITY, NULL);
+	xTimerStart(xTimerCreate("MessengerUART_messenger_timer", configTICK_RATE_HZ / 100, pdTRUE, NULL, messenger_timer), 0);
 }
 
 static void messenger(void* pvParam)
@@ -37,7 +37,7 @@ static void messenger(void* pvParam)
 	char message[101];
 
 	while(true){
-		//xSemaphoreTake(messengerSem, portMAX_DELAY);	//wait for signal to run
+		xSemaphoreTake(messengerSem, portMAX_DELAY);	//wait for signal to run
 		while(CommandFromUARTGet_reply(message, 100)){
 			while(*message == '\0'); //spin if the message was to long
 			printf("%s", message);
@@ -59,7 +59,7 @@ static void messenger(void* pvParam)
 			isConc = MesConcentrationGet_concentration(&concentration);
 			isTemp = MesTemperatureGet_temperature(&temperature);
 		}
-		vTaskDelay(configTICK_RATE_HZ / 100);
+		//vTaskDelay(configTICK_RATE_HZ / 100);
 	}
 }
 

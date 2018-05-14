@@ -7,6 +7,8 @@
 
 #include <Init.h>
 
+#include <stdio.h>
+
 int main(void)
 {
 	/* Chip errata */
@@ -20,4 +22,8 @@ int main(void)
 	{
 		//out of RAM fault
 	}
+}
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName) {
+	printf("%s", pcTaskName);
 }
