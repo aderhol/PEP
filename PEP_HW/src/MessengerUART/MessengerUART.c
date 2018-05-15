@@ -38,10 +38,10 @@ static void messenger(void* pvParam)
 
 	while(true){
 		xSemaphoreTake(messengerSem, portMAX_DELAY);	//wait for signal to run
-		while(CommandFromUARTGet_reply(message, 100)){
-			while(*message == '\0'); //spin if the message was to long
+		while(CommandFromUARTGet_reply(message, 101)){
 			printf("%s", message);
 		}
+		while(*message == '\0'); //spin if the message was to long
 
 		bool isConc, isTemp;
 		Temperature temperature;
@@ -50,16 +50,15 @@ static void messenger(void* pvParam)
 		isTemp = MesTemperatureGet_temperature(&temperature);
 		while(isConc || isTemp){
 			if(isConc && isTemp)
-				printf("$DAT,%.2f,%lu,%.2f,%lu\r\n", temperature.temperature, temperature.time, concentration.concentration, concentration.time);
+				printf("$DAT,%.2f,%lu,%.2f,%lu\n", temperature.temperature, temperature.time, concentration.concentration, concentration.time);
 			else if(isTemp)
-				printf("$DAT,%.2f,%lu,,\r\n", temperature.temperature, temperature.time);
+				printf("$DAT,%.2f,%lu,NaN, \n", temperature.temperature, temperature.time);
 			else
-				printf("$DAT,,,%.2f,%lu\r\n", concentration.concentration, concentration.time);
+				printf("$DAT,NaN, ,%.2f,%lu\n", concentration.concentration, concentration.time);
 			
 			isConc = MesConcentrationGet_concentration(&concentration);
 			isTemp = MesTemperatureGet_temperature(&temperature);
 		}
-		//vTaskDelay(configTICK_RATE_HZ / 100);
 	}
 }
 
@@ -70,6 +69,7 @@ static void messenger_timer(TimerHandle_t xTimer)
 
 bool __attribute__((weak)) MesConcentrationGet_concentration(Concentration* con)
 {
+	return false;
 	static uint32_t time = 0;
 	static int count = 0;
 	time++;
@@ -83,6 +83,7 @@ bool __attribute__((weak)) MesConcentrationGet_concentration(Concentration* con)
 
 bool __attribute__((weak)) MesTemperatureGet_temperature(Temperature* temp)
 {
+	return false;
 	static uint32_t time = 0;
 	static int count = 0;
 	count = (count + 1) % 10;
@@ -91,16 +92,6 @@ bool __attribute__((weak)) MesTemperatureGet_temperature(Temperature* temp)
 		return false;
 	temp->temperature = 12.345;
 	temp->time = time;
-	return true;
-}
-
-bool __attribute__((weak)) CommandFromUARTGet_reply(char* ms, int_fast16_t maxLength)
-{
-	static int count = 0;
-	count = (count + 1) % 100;
-	if(count != 0)
-		return false;
-	strcpy(ms, "$ALIVE\r\n");
 	return true;
 }
 

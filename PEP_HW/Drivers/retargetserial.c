@@ -35,7 +35,7 @@
 
 /* Receive buffer */
 #ifndef RXBUFSIZE
-#define RXBUFSIZE    8                          /**< Buffer size for RX */
+#define RXBUFSIZE    100                          /**< Buffer size for RX */
 #endif
 static volatile int     rxReadIndex  = 0;       /**< Index in buffer to be read */
 static volatile int     rxWriteIndex = 0;       /**< Index in buffer to be written to */
