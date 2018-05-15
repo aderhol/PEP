@@ -71,19 +71,3 @@ static void statusGet(TimerHandle_t xTimer)
 	if(!CommandFromUARTGet_status(&status))
 		status = UNKNOWN;
 }
-
-
-
-
-
-
-
-bool __attribute__((weak)) CommandFromUARTGet_status(Status* status)
-{
-	static int i = 0, st = 0;
-	i = (i + 1) % 100;
-	if(i == 0)
-		st = (st + 1) % 4;
-	*status = st;
-	return true;
-}

@@ -66,32 +66,3 @@ static void messenger_timer(TimerHandle_t xTimer)
 {
 	xSemaphoreGive(messengerSem);
 }
-
-bool __attribute__((weak)) MesConcentrationGet_concentration(Concentration* con)
-{
-	return false;
-	static uint32_t time = 0;
-	static int count = 0;
-	time++;
-	count = (count + 1) % 20;
-	if(count != 0)
-		return false;
-	con->concentration = 123.456;
-	con->time = time;
-	return true;
-}
-
-bool __attribute__((weak)) MesTemperatureGet_temperature(Temperature* temp)
-{
-	return false;
-	static uint32_t time = 0;
-	static int count = 0;
-	count = (count + 1) % 10;
-	time++;
-	if(count != 0)
-		return false;
-	temp->temperature = 12.345;
-	temp->time = time;
-	return true;
-}
-

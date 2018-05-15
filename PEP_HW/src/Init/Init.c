@@ -72,36 +72,6 @@ static void defaultInit(void)
 
 //weak defines for the initialization routines
 
-void __attribute__((weak)) 	MesConcentrationInit(void)
-{
-	defaultInit();
-}
-
-void __attribute__((weak)) 	MesTemperatureInit(void)
-{
-	defaultInit();
-}
-
-void __attribute__((weak)) 	StatusIndInit(void)
-{
-	defaultInit();
-}
-
-void __attribute__((weak)) 	SystemClockInit(void)
-{
-	defaultInit();
-}
-
-void __attribute__((weak)) 	CommandFromUARTInit(void)
-{
-	defaultInit();
-}
-
-void __attribute__((weak)) 	MessengerUARTInit(void)
-{
-	defaultInit();
-}
-
 void __attribute__((weak)) 	AlarmLEDInit(void)
 {
 	defaultInit();

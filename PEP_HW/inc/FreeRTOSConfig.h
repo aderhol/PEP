@@ -104,7 +104,7 @@ extern "C" {
 /* Main functions*/
 #define configMAX_PRIORITIES                      ( 6 )
 #define configMINIMAL_STACK_SIZE                  (( unsigned short ) 140)
-#define configTOTAL_HEAP_SIZE                     (( size_t )(9000))
+#define configTOTAL_HEAP_SIZE                     (( size_t )(9000 * 2))
 #define configMAX_TASK_NAME_LEN                   ( 50 )
 #define configUSE_TRACE_FACILITY                  ( 0 )
 #define configUSE_16_BIT_TICKS                    ( 0 )
