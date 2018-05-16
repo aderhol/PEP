@@ -4,6 +4,8 @@
 #include <em_cmu.h>
 #include <em_adc.h>
 
+#include <bsp.h>
+
 #include <Init.h>
 
 #include <common.h>
@@ -25,6 +27,7 @@ static void randomInit(void);
 void Init(void)
 {
 	randomInit();
+	BSP_LedsInit();
 	
 	//initialization of the system
 	MesConcentrationInit();
@@ -61,18 +64,4 @@ static void randomInit(void)
 	CMU_ClockEnable(cmuClock_ADC0, false);								//turns off the clock for the ADC (disables it)
 
 	srand(seed);														//initializes the standard librariy's rand() with the seed
-}
-
-//default initialization routine
-static void defaultInit(void)
-{
-	return;
-}
-
-
-//weak defines for the initialization routines
-
-void __attribute__((weak)) 	AlarmLEDInit(void)
-{
-	defaultInit();
 }

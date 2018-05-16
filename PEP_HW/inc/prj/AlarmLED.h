@@ -1,6 +1,6 @@
 #ifndef ALARMLED_H
 #define ALARMLED_H
 
-extern void AlarmLEDInit(void);
+void AlarmLEDInit(void);
 
 #endif
