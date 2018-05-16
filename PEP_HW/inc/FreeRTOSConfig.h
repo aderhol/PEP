@@ -92,7 +92,7 @@ extern "C" {
 #define configASSERT( x )                         EFM_ASSERT( x )
 
 /* Modes of operations of operation system*/
-#define configUSE_PREEMPTION                      ( 1 )
+#define configUSE_PREEMPTION                      ( 0 )
 #define configUSE_TICKLESS_IDLE                   ( 0 )
 
 /* The frequency of the RTOS tick interrupt */
