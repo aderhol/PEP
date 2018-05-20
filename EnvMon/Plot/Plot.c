@@ -8,8 +8,13 @@
 
 #include <pthread.h>
 #include <time.h>
+#include <unistd.h>
+
+#include <common.h>
 
 #include <Plot.h>
+
+#include <Error.h>
 
 static void* plot(void* args);
 
@@ -36,8 +41,67 @@ static void addToSet(DataSet* set, datP dat);
 static bool getFromSet(DataSet* set, size_t index, datP* dat);
 #define setIndex(set, ind)	(((set).first + (ind)) % DataSetLength)
 
+static bool plotInit(void);
+static FILE* gnuplotPipe;
+
+static void* plot(void* args)
+{
+	while(!isStopRequested()){
+		sleep(1);
+		
+		pthread_mutex_lock(&(tempSet.mutex));
+		pthread_mutex_lock(&(concSet.mutex));
+		if(!(tempSet.count > 0) || !(concSet.count > 0)){
+			pthread_mutex_unlock(&(tempSet.mutex));
+			pthread_mutex_unlock(&(concSet.mutex));
+			continue;
+		}
+		pthread_mutex_unlock(&(tempSet.mutex));
+		pthread_mutex_unlock(&(concSet.mutex));
+		
+		fprintf(gnuplotPipe, "plot '-' using 1:3 t \"\" with lines lt 1 axes x1y1, '-' using 1:3 t \"\" with lines lt 2 axes x1y2\n");
+		
+		pthread_mutex_lock(&(concSet.mutex));
+		for(size_t i = 0; i < concSet.count; i++){
+			datP dat;
+			if(!getFromSet(&concSet, i, &dat)){
+				sendToError("Fatal Error: Plot -> plot >> getFromSet");
+				while(true);
+			}
+			fprintf(gnuplotPipe, "%s %f\n", dat.date, dat.dat);
+		}
+		pthread_mutex_unlock(&(concSet.mutex));
+		fprintf(gnuplotPipe, "e\n");
+		
+		pthread_mutex_lock(&(tempSet.mutex));
+		for(size_t i = 0; i < tempSet.count; i++){
+			datP dat;
+			if(!getFromSet(&tempSet, i, &dat)){
+				sendToError("Fatal Error: Plot -> plot >> getFromSet");
+				while(true);
+			}
+			fprintf(gnuplotPipe, "%s %f\n", dat.date, dat.dat);
+		}
+		pthread_mutex_unlock(&(tempSet.mutex));
+		fprintf(gnuplotPipe, "e\n");
+
+		fflush(gnuplotPipe);
+	}
+	isInit = false;
+	pclose(gnuplotPipe);
+	pthread_mutex_destroy(&(tempSet.mutex));
+	pthread_mutex_destroy(&(concSet.mutex));
+	pthread_mutex_destroy(&time_mut);
+	sendToError("Plot Out!");
+	return NULL;
+}
+
 bool PlotInit(pthread_t* threads, int* count, int maxCount)
 {
+	*count = 0;
+	if(maxCount < 1)
+		return false;	
+	
 	pthread_mutex_init(&time_mut, NULL);
 	pthread_mutex_init(&(tempSet.mutex), NULL);
 	tempSet.first = 0;
@@ -46,9 +110,37 @@ bool PlotInit(pthread_t* threads, int* count, int maxCount)
 	concSet.first = 0;
 	concSet.count = 0;
 	
+	if(!plotInit())	
+		return false;
 	
+	pthread_create(threads + (*count)++, NULL, plot, NULL);
 	
 	isInit = true;
+	return true;
+}
+
+static bool plotInit(void)
+{
+	char * comm[] = {
+			"set term wxt font \"Helvetica,20\"",
+			"set title \"Environment Monitor\" font \"Helvetica,45\" tc rgb \"0x0000CD\"",
+			"set ytics tc lt 1",
+			"set y2tics tc lt 2",
+			"set xdata time",
+			"set timefmt \"%Y-%m-%d %H:%M:%S\"",
+			"set format x \"%H:%M:%S\"",
+			"set grid",
+			"set xlabel \"Date of Measurement\"",
+			"set ylabel \"Concentration [ppm]\" tc lt 1",
+			"set y2label \"Temperature [°C]\" tc lt 2"
+	};
+	
+	if(NULL == (gnuplotPipe = popen("gnuplot 1> /dev/null 2> /dev/null", "w")))
+			return false;
+
+	for(int i = 0; i < sizeof(comm)/sizeof(comm[0]); i++)
+		fprintf(gnuplotPipe, "%s\n", comm[i]);
+	
 	return true;
 }
 
@@ -108,12 +200,6 @@ bool sendToPlot(char const* dat)
 	return true;
 }
 
-static void* plot(void* args)
-{
-	
-	return NULL;
-}
-
 static bool getTime(const int64_t datTime_ms, char* datTime, size_t maxStrLength)
 {
 	if(!isInit)
@@ -134,15 +220,11 @@ static bool getTime(const int64_t datTime_ms, char* datTime, size_t maxStrLength
 	
 
 	struct tm localDatTime_s;
-	time_t numDateTime_s = numDatTime_ms / 1000;
+	time_t numDateTime_s = (time_t)round(numDatTime_ms / 1000.0);
 	localtime_r(&numDateTime_s, &localDatTime_s);
-	size_t timeOutLen = strftime(datTime, maxStrLength, "%F %T.", &localDatTime_s);
-	if(maxStrLength - timeOutLen < 3 || timeOutLen == 0){
+	if(strftime(datTime, maxStrLength, "%F %T", &localDatTime_s) == 0)
 		return false;
-	}
-	char ms[10];
-	sprintf(ms, "%.3d", (int)(numDatTime_ms % 1000));
-	strcat(datTime, ms);
+	
 	return true;
 }
 
@@ -169,12 +251,9 @@ static bool getFromSet(DataSet* set, size_t index, datP* dat)
 	if(!isInit)
 		return false;
 	
-	pthread_mutex_lock(&(set->mutex));
-	
 	if(index >= set->count)
 		return false;
 	
 	*dat = set->set[setIndex(*set, index)];
-	pthread_mutex_unlock(&(set->mutex));
 	return true;
 }

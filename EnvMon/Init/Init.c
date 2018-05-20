@@ -14,24 +14,29 @@ bool Init(pthread_t* threads, int* count, int maxCount)
 {
 	int cnt = 0, ret_cnt, rem = maxCount;
 	
-	if(!ErrorInit(threads + cnt, &ret_cnt, rem)){
-		printf("Error initError\n");
+	if(!ErrorInit(threads + cnt, &ret_cnt, rem - cnt)){
+		printf("Error init error!\n");
 		cnt += ret_cnt;
 		*count = cnt;
 		return false;
 	}
 	cnt += ret_cnt;
-	
-	PlotInit(NULL, NULL, 0);
-	
-	if(!Init_SerialPort(threads + cnt, &ret_cnt, rem)){
-		printf("Serial initError\n");
+		
+	if(!Init_SerialPort(threads + cnt, &ret_cnt, rem - cnt)){
+		printf("Serial init error!\n");
 		cnt += ret_cnt;
 		*count = cnt;
 		return false;
 	}
 	cnt += ret_cnt;
-	
+		
+	if(!PlotInit(threads + cnt, &ret_cnt, rem - cnt)){
+		printf("Plot init error!\n");
+		cnt += ret_cnt;
+		*count = cnt;
+		return false;
+	}
+	cnt += ret_cnt;	
 
 	*count = cnt;
 	return true;

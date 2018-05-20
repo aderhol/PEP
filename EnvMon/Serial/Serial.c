@@ -23,13 +23,6 @@ static void TokenPing(char *str, char* out);
 static bool StartTransfer(char* str);
 static void *Serial_Thread(void* arg); 
 
-bool __attribute__((weak)) sendToPlot(char const* str)
-{
-	char a[1000];
-	sprintf(a,"Plot: %s", str);
-	return sendToError(a);
-}
-
 static void *Serial_Thread(void* arg)
 {
     char readChar;
