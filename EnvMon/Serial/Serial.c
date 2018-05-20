@@ -1,10 +1,3 @@
-/*
- * Serial.c
- *
- *  Created on: May 17, 2018
- *      Author: student
- */
-
 #include <stdlib.h>
 #include <pthread.h>
 #include <termios.h>
@@ -29,6 +22,13 @@ static void Close_SerialPort();
 static void TokenPing(char *str, char* out);
 static bool StartTransfer(char* str);
 static void *Serial_Thread(void* arg); 
+
+/*static bool sendToPlot(char* str)
+{
+	char a[1000];
+	sprintf(a,"Plot: %s", str);
+	return sendToError(a);
+}*/
 
 static void *Serial_Thread(void* arg)
 {
@@ -149,6 +149,7 @@ static void Close_SerialPort()
 
 static bool StartTransfer(char* str)
 {
+	char* strtokState;
 	if(str[0] != '$')						// nem valódi adat
 	{
 		sendToError("Invalid serial data ($ is missing).");
@@ -158,30 +159,30 @@ static bool StartTransfer(char* str)
 	{
 		char* token;					// command kiolvasás
 		str++;	//$ levágása
-        token = strtok(str,",");
+        token = strtok_r(str,",", &strtokState);
 		
 			if(strcmp(token,"DAT") == 0)			// adat érkezett
 			{
-				sendToPlot(strtok(NULL, ""));
+				sendToPlot(strtok_r(NULL, "", &strtokState));
                 return true;
 			}
 			else if(strcmp(token,"PING") == 0)							// ping érkezett
 			{
-				TokenPing(strtok(NULL, ""), str);  
+				TokenPing(strtok_r(NULL, "", &strtokState), str);  
                 write(serialfd, (void*)str, strlen(str));
                 return true;     
 			}
 			else if(strcmp(token, "ERROR") == 0)
 			{
 				char message[200];
-				sprintf(message, "Serial error ($ERROR): %s", strtok(NULL, ""));
+				sprintf(message, "Serial error ($ERROR): %s", strtok_r(NULL, "", &strtokState));
 				sendToError(message);
 				return true;
 			}
 			else
 			{
 				char message[200];
-				sprintf(message, "Invalid serial message ($%s): %s",token, strtok(NULL, ""));
+				sprintf(message, "Invalid serial message ($%s): %s",token, strtok_r(NULL, "", &strtokState));
 				sendToError(message);
 				return false;
 			}
@@ -190,9 +191,10 @@ static bool StartTransfer(char* str)
 
 static void TokenPing(char *str, char* out)
 {	
-	char * ID_str = strtok(str, ",");
+	char* strtokState;
+	char* ID_str = strtok_r(str, ",", &strtokState);
 	
-	if(strtok(NULL, ",") != NULL){
+	if(strtok_r(NULL, ",", &strtokState) != NULL){
 		sendToError("Invalid serial message: $PING has too many arguments.");
 		out[0] = '\0'; //send nothing
 		return;
