@@ -22,6 +22,8 @@ bool Init(pthread_t* threads, int* count, int maxCount)
 	}
 	cnt += ret_cnt;
 	
+	PlotInit(NULL, NULL, 0);
+	
 	if(!Init_SerialPort(threads + cnt, &ret_cnt, rem)){
 		printf("Serial initError\n");
 		cnt += ret_cnt;

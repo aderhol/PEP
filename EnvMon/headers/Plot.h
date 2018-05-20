@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 bool PlotInit(pthread_t* threads, int* count, int maxCount);
-bool sendToPlot(char* dat);
+bool sendToPlot(char const* dat);
 
 
 #endif /* HEADERS_PLOT_H_ */
