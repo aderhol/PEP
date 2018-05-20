@@ -9,6 +9,7 @@
 #include <Error.h>
 #include <Serial.h>
 #include <Plot.h>
+#include <Alarm.h>
 
 bool Init(pthread_t* threads, int* count, int maxCount)
 {
@@ -36,7 +37,15 @@ bool Init(pthread_t* threads, int* count, int maxCount)
 		*count = cnt;
 		return false;
 	}
-	cnt += ret_cnt;	
+	cnt += ret_cnt;
+		
+	if(!AlarmInit(threads + cnt, &ret_cnt, rem - cnt)){
+		printf("Plot init error!\n");
+		cnt += ret_cnt;
+		*count = cnt;
+		return false;
+	}
+	cnt += ret_cnt;
 
 	*count = cnt;
 	return true;

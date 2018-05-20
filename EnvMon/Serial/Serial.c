@@ -50,7 +50,8 @@ static void *Serial_Thread(void* arg)
                     {
                         buffToSend[i] = '\0';
                     }
-                    StartTransfer(buffToSend);
+                    if(!StartTransfer(buffToSend))
+                    	sendToError("Error: StartTransfer()");
                     i = 0;
                 }
                 else
@@ -156,8 +157,13 @@ static bool StartTransfer(char* str)
 		
 			if(strcmp(token,"DAT") == 0)			// adat érkezett
 			{
-				sendToPlot(strtok_r(NULL, "", &strtokState));
-                return true;
+				bool isNotOK = false;
+				char * datStr = strtok_r(NULL, "", &strtokState);
+				if(isNotOK |= (!sendToAlarm(datStr)))
+					sendToError("Error: sendToAlarm()");
+				if(isNotOK |= (!sendToPlot(datStr)))
+						sendToError("Error: sendToPlot()");
+                return !isNotOK;
 			}
 			else if(strcmp(token,"PING") == 0)							// ping érkezett
 			{
