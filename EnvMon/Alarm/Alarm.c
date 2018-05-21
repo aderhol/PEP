@@ -14,7 +14,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define critical_conc 1200
+#define critical_conc 200
 static pthread_mutex_t alarm_mut;
 static bool AlarmFlag = false;	
 

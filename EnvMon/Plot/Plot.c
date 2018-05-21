@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <stdio.h>
+#include <float.h>
 
 #include <pthread.h>
 #include <time.h>
@@ -44,6 +45,7 @@ static bool getFromSet(DataSet* set, size_t index, datP* dat);
 static bool plotInit(void);
 static FILE* gnuplotPipe;
 
+#define graphMarginRel 0.05 //5%
 static void* plot(void* args)
 {
 	while(!isStopRequested()){
@@ -73,6 +75,7 @@ static void* plot(void* args)
 		pthread_mutex_unlock(&(concSet.mutex));
 		fprintf(gnuplotPipe, "e\n");
 		
+		double tempMin = DBL_MAX, tempMax = DBL_MIN;
 		pthread_mutex_lock(&(tempSet.mutex));
 		for(size_t i = 0; i < tempSet.count; i++){
 			datP dat;
@@ -81,10 +84,17 @@ static void* plot(void* args)
 				while(true);
 			}
 			fprintf(gnuplotPipe, "%s %f\n", dat.date, dat.dat);
+			tempMin = (dat.dat < tempMin) ? dat.dat : tempMin;
+			tempMax = (dat.dat > tempMax) ? dat.dat : tempMax;
 		}
 		pthread_mutex_unlock(&(tempSet.mutex));
 		fprintf(gnuplotPipe, "e\n");
 
+		tempMin -= 0.5;
+		tempMax += 0.5;
+		fprintf(gnuplotPipe, "set y2range [%f : %f]\n", (((int)((tempMin - ((tempMax - tempMin) * graphMarginRel)) * 2)) / 2.0), (((int)((tempMax + ((tempMax - tempMin) * graphMarginRel)) * 2)) / 2.0));
+		fprintf(gnuplotPipe, "set xrange [\"%s\" : \"%s\"]\n", tempSet.set[tempSet.first].date, tempSet.set[tempSet.count - 1].date);
+		
 		fflush(gnuplotPipe);
 	}
 	isInit = false;
@@ -122,7 +132,7 @@ bool PlotInit(pthread_t* threads, int* count, int maxCount)
 static bool plotInit(void)
 {
 	char * comm[] = {
-			"set term wxt font \"Helvetica,20\"",
+			"set term wxt noraise font \"Helvetica,20\"",
 			"set title \"Environment Monitor\" font \"Helvetica,45\" tc rgb \"0x0000CD\"",
 			"set ytics tc lt 1",
 			"set y2tics tc lt 2",
@@ -132,7 +142,9 @@ static bool plotInit(void)
 			"set grid",
 			"set xlabel \"Date of Measurement\"",
 			"set ylabel \"Concentration [ppm]\" tc lt 1",
-			"set y2label \"Temperature [°C]\" tc lt 2"
+			"set y2label \"Temperature [°C]\" tc lt 2",
+			"set logscale y",
+			"set offsets graph 0, 0, 0.05, 0.05"
 	};
 	
 	if(NULL == (gnuplotPipe = popen("gnuplot 1> /dev/null 2> /dev/null", "w")))
